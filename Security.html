@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Security</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="all">
+<link rel="stylesheet" href="css/layout.css" type="text/css" media="all">
+<link rel="stylesheet" href="css/style.css" type="text/css" media="all">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script src = "js/d3.js" charset = "utf-8"></script>
+</head>
+
+<body id="page1">
+<div class="body1">
+  <div class="main">
+    <div class = "importData"></div>
+    <!-- header -->
+    <header>
+      <h1 class="titleDiv">Students rent house</h1>
+      <div class="wrapper">
+        <ul id="icons">
+          <li><a href="#" class="normaltip" title="Facebook"><img src="images/icon1.jpg" alt=""></a></li>
+          <li><a href="#" class="normaltip" title="Twitter"><img src="images/icon2.jpg" alt=""></a></li>
+          <li><a href="#" class="normaltip" title="Linkedin"><img src="images/icon3.jpg" alt=""></a></li>
+        </ul>
+      </div>
+      <nav>
+        <ul id="menu">
+          
+          <li><a href="index.html">Main Page</a></li>
+          <li id="menu_active"><a href="Security.html">Security</a></li>
+          <li><a href="Inexpensive.html">Inexpensive</a></li>
+          <li><a href="Near.html">Near</a></li>
+          <li><a href="Price.html">Price</a></li>
+          <li class="end"><a href="Contact.html">Contact Us</a></li>
+        </ul>
+      </nav>
+    </header>
+    <!-- / header --> 
+  </div>
+</div>
+<!-- content -->
+<div class="body2">
+  <div class="main">
+    <section id="content">
+      <div class="wrapper">
+        <article class="col1">
+          <div id="map"></div>
+          <style>
+				#map {
+				 width: 100%;
+				 height: 376px;
+				 background-color: grey;
+				}
+		  </style>
+          <script async defer src ="https://maps.googleapis.com/maps/api/js?key=AIzaSyD68Mvgvu0RXHYZ442N8sNoe97Mb3FS2fg&callback=initMap">
+		  </script> 
+          <script type="text/javascript">
+				function initMap(){
+				 var mapDiv = document.getElementById("map"); //Line 1: Save reference to div element where map would be shown
+			     var map = new google.maps.Map(mapDiv, {//Line 2: Create Map object passing element reference, center and zoom as parameters
+				center: {lat: 40.4237, lng: -86.9212}, //This is Purdue University's Location
+				zoom: 12});
+									}
+		  </script> 
+          <script type="text/javascript">
+				function initMap(){
+				var lt = 41.8708;
+				var lg = -87.6505;
+				var title = 'Department of Computer Science - University of Illinois';
+				var map = new google.maps.Map(d3.select("#map").node(),
+					{
+					zoom: 15,
+					center: new google.maps.LatLng(lt, lg),
+					mapTypeId: google.maps.MapTypeId.TERRAIN,
+					mapTypeControlOptions: {
+											style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+											position: google.maps.ControlPosition.LEFT_BOTTOM
+											}
+					});
+
+					loadPoints(map);
+					var icon = {
+					url: "images/icon-university.png",
+					scaledSize: new google.maps.Size(42, 42), // scaled size
+					origin: new google.maps.Point(0,0), // origin
+					anchor: new google.maps.Point(0, 0) // anchor	
+
+					};
+					var marker = new google.maps.Marker({ //Line 1
+						position: {lat: lt , lng: lg}, //Line2: Location to be highlighted
+						map: map,//Line 3: Reference to map object
+						title: title, //Line 4: Title to be given
+						icon: icon
+						});
+			   }
+
+			   function loadPoints(map){
+					$.getJSON("https://data.cityofchicago.org/api/views/s6ha-ppgi/rows.json ", function (data) {
+					 	for(i in data["data"]){			
+							var mapData = {
+							name : data["data"][i][11],
+							addres: data["data"][i][12],
+							phone: data["data"][i][14],
+							type: data["data"][i][10],
+							area: data["data"][i][8],
+							number: data["data"][i][16],
+							company: data["data"][i][15],
+							lat: parseFloat(data["data"][i][19]),
+							lng: parseFloat(data["data"][i][20]),
+							img: 'https://maps.googleapis.com/maps/api/streetview?' + 'location=' + data["data"][i][12] + '&size=600x300' + '&key=AIzaSyD68Mvgvu0RXHYZ442N8sNoe97Mb3FS2fg',
+							price: 0
+							};
+				makePoint(map, mapData, "images/peligro.png");
+						}
+					});
+				}
+				function makePoint(map, mapData, ico){
+					var icon = {
+						url: ico,
+						scaledSize: new google.maps.Size(42, 42), // scaled size
+						origin: new google.maps.Point(0,0), // origin
+						anchor: new google.maps.Point(0, 0) // anchor	
+
+					};
+					var marker = new google.maps.Marker({ //Line 1
+						position: {lat: mapData.lat , lng: mapData.lng}, //Line2: Location to be highlighted
+						map: map,//Line 3: Reference to map object
+						title: mapData.name, //Line 4: Title to be given
+						icon: icon
+
+					});
+
+					var contentString = 
+					'<div id="content">'+
+						'<div id="siteNotice">'+
+						'</div>'+
+						'<h5 id="firstHeading" class="firstHeading">' + mapData.name + '</h5>'+
+						'<div id="bodyContent">'+
+							'<img src = "' + mapData.img + '" width = "200">' + 
+							'<br><b>Addres: </b>' + mapData.addres +
+							'<br><b>Phone: </b>' + mapData.phone +
+							'<br><b>Company: </b>' + mapData.company +
+						'</div>'+
+					'</div>';
+
+
+				var infowindow = new google.maps.InfoWindow({
+					content: contentString,
+					maxWidth: 250
+				});
+
+				marker.addListener('click' , function(){
+					infowindow.open(map, marker);
+
+				})
+
+				}
+			    function loadPointsSecuriy(map){
+				   
+				   
+				   
+				   
+			   }
+			function loadApp(map){
+			// Load the station data. When the data comes back, create an overlay.
+			d3.json("https://data.cityofchicago.org/resource/6zsd-86xi.json", function(error, data) {
+				if (error) throw error;
+
+				var overlay = new google.maps.OverlayView();
+
+				// Add the container when the overlay is added to the map.
+				overlay.onAdd = function() {
+					var layer = d3.select(this.getPanes().overlayLayer).append("div")
+						.attr("class", "points");
+					// Draw each marker as a separate SVG element.
+					// We could use a single SVG, but what size would it have?
+					overlay.draw = function() {
+						var projection = this.getProjection(),
+						padding = 10;
+
+						var marker = layer.selectAll("svg")
+							.data(d3.entries(data["data"]))
+							.each(transform) // update existing markers
+							.enter().append("svg")
+							.each(transform)
+							.attr("class", "marker");
+
+						// Add a circle.
+						marker.append("circle")
+							.attr("r", 4.5)
+							.attr("cx", padding)
+							.attr("cy", padding);
+
+						// Add a label.
+						marker.append("text")
+							.attr("x", padding + 7)
+							.attr("y", padding)
+							.attr("dy", ".31em")
+							.text(function(d) {return d.key; });
+
+					function transform(d) {
+						d = new google.maps.LatLng(d.value[19], d.value[20]);
+						d = projection.fromLatLngToDivPixel(d);
+						return d3.select(this)
+							.style("left", (d.x - padding) + "px")
+							.style("top", (d.y - padding) + "px");
+					}
+				};
+			};
+
+			// Bind our overlay to the map…
+			overlay.setMap(map);
+		});
+		}
+		</script>
+        </article>
+        <article class="col2">
+          <form id="form_1" method="post">
+            <div class="pad1">
+              <h3>Find Your house</h3>
+              <div class="row"> City &amp; State, or Zip:<br>
+                <input type="text" class="input">
+              </div>
+              <div class="row_select"> Search Area:<br>
+                <select>
+                  <option>&nbsp;</option>
+                  <option>...</option>
+                  <option>...</option>
+                </select>
+              </div>
+              <div class="row_select">
+                <div class="cols"> Price Range:<br>
+                  <select>
+                    <option>&nbsp;</option>
+                    <option>...</option>
+                    <option>...</option>
+                  </select>
+                </div>
+                <div class="cols pad_left1"> to:<br>
+                  <select>
+                    <option>&nbsp;</option>
+                    <option>...</option>
+                    <option>...</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row_select">
+                <div class="cols"> Bedroom(s):<br>
+                  <select>
+                    <option>&nbsp;</option>
+                    <option>...</option>
+                    <option>...</option>
+                  </select>
+                </div>
+                <div class="cols pad_left1"> Bathroom(s):<br>
+                  <select>
+                    <option>&nbsp;</option>
+                    <option>...</option>
+                    <option>...</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row_select pad_bot1">
+                <div class="cols"> Radius:<br>
+                  <select>
+                    <option>&nbsp;</option>
+                    <option>...</option>
+                    <option>...</option>
+                  </select>
+                </div>
+                <div class="cols pad_left1"> <a href="#" class="button" onClick="document.getElementById('form_1').submit()">Proposals</a> </div>
+              </div>
+              Know exactly what you want? <br>
+              Try our <a href="#">Advanced Search</a> </div>
+          </form>
+        </article>
+      </div>
+      <div class="wrapper">
+        <article class="col1">
+          <div class="pad_left1">
+            <h2 class="pad_bot1">Rent house</h2>
+            <div class="wrapper">
+              <article class="cols">
+                <h4 class="img1">Near</h4>
+                <p class="pad_bot1"><strong class="color1">Sectors <br>
+                  </strong></p>
+                <p class="pad_bot2"> Find a house near your faculty </p>
+                <a href="#" class="button">Read more</a> </article>
+              <article class="cols pad_left1">
+                <h4 class="img2">Inexpensive</h4>
+                <p class="pad_bot1"><strong class="color1">Good, nice and economic. <br>
+                  rooms</strong></p>
+                <p class="pad_bot2"> Find a house for a special price</p>
+                <a href="#" class="button">Read more</a> </article>
+              <article class="cols pad_left1">
+                <h4 class="img3">Comfortable</h4>
+                <p class="pad_bot1"><strong class="color1"> Houses in the best conditions</strong></p>
+                <p class="pad_bot2"> <a href="index.html" class="color2">Home</a>, <a href="Buying.html" class="color2">Climate Condition</a>, <a href="Selling.html" class="color2">Inexpensive</a>, <a href="Renting.html" class="color2">Near</a>, <a href="Finance.html" class="color2">Price</a>, <a href="Contacts.html" class="color2">Contacts</a> (note - just for students).</p>
+                <a href="#" class="button">Read more</a> </article>
+            </div>
+          </div>
+        </article>
+        <article class="col2">
+          <div class="pad1">
+            <h3>Special Offers</h3>
+            <ul class="list1">
+              <li><a href="#">Home Loan Offer</a></li>
+              <li><a href="#">Free Calculators</a></li>
+              <li><a href="#">Free Loan Tools</a></li>
+              <li><a href="#">Value Your Home</a></li>
+              <li><a href="#">Recently Sold Properties</a></li>
+              <li><a href="#">Suburb Statistics</a></li>
+              <li><a href="#">Compare Property Prices</a></li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="body3">
+  <div class="main">
+    <section id="content2">
+      <div class="wrapper">
+        <article class="col1">
+          <div class="pad2">
+            <h2>Modern Rooms</h2>
+            <div class="wrapper pad_bot3">
+              <figure class="left marg_right1"><img src="images/page1_img4.jpg" alt=""></figure>
+              <p class="pad_bot1"><strong class="color2">2006, 3 baths, 6 beds, building size: 5000 sq. ft.<br>
+                Price: <span class="color1">$ 600 000</span></strong></p>
+              <p class="pad_bot2"> Beautiful rooms with everything you need, has wifi, hot water, green areas</p>
+              <a href="#" class="button">Read more</a> </div>
+            <div class="wrapper">
+              <figure class="left marg_right1"><img src="images/page1_img5.jpg" alt=""></figure>
+              <p class="pad_bot1"><strong class="color2">2006, 3 baths, 6 beds, building size: 5000 sq. ft.<br>
+                Price: <span class="color1">$ 600 000</span></strong></p>
+              <p class="pad_bot2"> Beautiful rooms with everything you need, has wifi, hot water, green areas</p>
+              <a href="#" class="button">Read more</a> </div>
+          </div>
+        </article>
+        <article class="col2">
+          <div class="pad1">
+            <h3>Recent News</h3>
+            <div class="wrapper"> <span class="date"><strong>28</strong><span>may</span></span>
+              <p><a href="#" class="color2">Chicago</a><br>
+                take advantage of! Special offer, just for this month, find homes in exclusive places <a href="#">more</a></p>
+            </div>
+            <div class="wrapper"> <span class="date"><strong>25</strong><span>may</span></span>
+              <p><a href="#" class="color2">Chicago</a><br>
+                take advantage of! Special offer, just for this month, find homes in exclusive places <a href="#">more</a></p>
+            </div>
+            <div class="wrapper"> <span class="date"><strong>22</strong><span>may</span></span>
+              <p><a href="#" class="color2">Chicago</a><br>
+                take advantage of! Special offer, just for this month, find homes in exclusive places<a href="#">more</a></p>
+              <br>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
+<!-- / content -->
+<div class="body4">
+  <div class="main"> 
+    <!-- footer -->
+    <footer>
+      <div class="footer">
+        <div align="center">
+          <h6>Katherine Viviana Sierra Briñez</h6>
+          <h5>Universidad Nacional de Colombia</h5>
+        </div>
+      </div>
+    </footer>
+    <!-- / footer --> 
+  </div>
+</div>
+</body>
+</html>
